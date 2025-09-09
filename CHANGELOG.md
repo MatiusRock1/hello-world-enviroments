@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.4...v1.0.5) (2025-09-09)
+
+
+### Bug Fixes
+
+* Adds 'tag_name' and 'version' to release job outputs and uses the released version in the Docker build step. Also adds a debug step to print release outputs for easier troubleshooting. ([942de97](https://github.com/MatiusRock1/hello-world-enviroments/commit/942de97666e2f1eb74252c777ebc3c00ae01d49e))
+
 ## [1.0.4](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.3...v1.0.4) (2025-09-09)
 
 
