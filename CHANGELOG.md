@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.5...v1.0.6) (2025-09-09)
+
+
+### Bug Fixes
+
+* Removes direct outputs for tag_name and version from the release-please step and instead retrieves the latest tag and version using git in a new step. Updates Docker build arguments to use the new version output, improving workflow reliability and decoupling from release-please outputs. ([4979405](https://github.com/MatiusRock1/hello-world-enviroments/commit/4979405e69e4def9133cae7337724196955aa4ad))
+
 ## [1.0.5](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.4...v1.0.5) (2025-09-09)
 
 
