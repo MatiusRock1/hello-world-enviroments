@@ -1,0 +1,26 @@
+{
+  "name": "hello-world-enviroments",
+  "version": "1.0.0",
+  "description": "A simple Node.js application with a controller that visualizes environment variables",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "nodejs",
+    "environment",
+    "controller",
+    "express",
+    "environment-variables"
+  ],
+  "author": "Semi-Senior Developer",
+  "license": "ISC",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
