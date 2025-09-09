@@ -97,6 +97,11 @@ jobs:
           const tag = '${{ steps.get_version.outputs.tag }}';
           const version = '${{ steps.get_version.outputs.version }}';
           
+          // Get current UTC time
+          const now = new Date();
+          const utcTime = now.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
+          const utcDate = now.toISOString().split('T')[0];
+          
           // Get the current release
           const release = await github.rest.repos.getReleaseByTag({
             owner,
@@ -110,6 +115,8 @@ jobs:
           ## 🐳 Docker Images
           
           This release is available as Docker images:
+          
+          **Generated on**: ${utcDate} at ${utcTime}
           
           ### Pull commands:
           \`\`\`bash
@@ -126,6 +133,7 @@ jobs:
           - **Tags**: \`${version}\`, \`latest\`
           - **Platform**: linux/amd64
           - **Base Image**: node:18-alpine
+          - **Build Time**: ${utcTime}
           
           ### Run the container:
           \`\`\`bash
