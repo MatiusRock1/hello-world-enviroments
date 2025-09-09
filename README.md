@@ -35,7 +35,23 @@ A simple and clean Node.js application that provides a controller to visualize e
    npm start
    ```
 
-4. Open your browser and visit: http://localhost:3000
+4. Open your browser and visit: http://localhost:8080
+
+## Docker Usage
+
+To run the application using Docker:
+
+1. Build the Docker image:
+   ```bash
+   docker build -t hello-world-enviroments .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 8080:8080 hello-world-enviroments
+   ```
+
+The application will be available at http://localhost:8080
 
 ## API Endpoints
 
@@ -69,7 +85,7 @@ Returns a specific environment variable by key.
 
 **Example:**
 ```bash
-curl http://localhost:3000/api/environment/HOME
+curl http://localhost:8080/api/environment/HOME
 ```
 
 **Response:**
