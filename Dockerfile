@@ -22,6 +22,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 
+
 # Copy the rest of the application code
 COPY . .
 
