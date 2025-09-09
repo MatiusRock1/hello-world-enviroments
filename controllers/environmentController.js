@@ -49,14 +49,6 @@ class EnvironmentController {
                 });
             }
 
-            // Check if the key contains sensitive information
-            if (this.isSensitiveKey(key)) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Access to sensitive environment variable denied'
-                });
-            }
-
             const value = process.env[key];
             
             if (value === undefined) {
@@ -84,27 +76,14 @@ class EnvironmentController {
     }
 
     /**
-     * Filter out sensitive environment variables
+     * Return all environment variables (no filtering for lab environment)
      * @private
      * @param {Object} env - Environment variables object
-     * @returns {Object} Filtered environment variables
+     * @returns {Object} All environment variables
      */
     filterSensitiveData(env) {
-        const filtered = {};
-        const sensitiveKeys = [
-            'PASSWORD', 'SECRET', 'KEY', 'TOKEN', 'API_KEY', 
-            'DB_PASSWORD', 'DATABASE_PASSWORD', 'PRIVATE'
-        ];
-
-        for (const [key, value] of Object.entries(env)) {
-            if (!this.isSensitiveKey(key)) {
-                filtered[key] = value;
-            } else {
-                filtered[key] = '***HIDDEN***';
-            }
-        }
-
-        return filtered;
+        // For laboratory/educational purposes, return all environment variables without filtering
+        return { ...env };
     }
 
     /**
