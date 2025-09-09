@@ -1,4 +1,4 @@
-name: Release Please
+name: deploy to dev
 
 on:
   push:
@@ -10,14 +10,51 @@ permissions:
   pull-requests: write
 
 jobs:
-  release-please:
+  release:
     runs-on: ubuntu-latest
+    environment: dev
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: google-github-actions/release-please-action@v4
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           release-type: node
-          package-name: hello-world-enviroments
+
+  build-and-deploy:
+    needs: release
+    if: ${{ needs.release.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: "checkout the repository"
+        uses: actions/checkout@v4
+
+      - name: "setup node environment"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: "setup pnpm"
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+          cache: "pnpm"
+
+      - name: "setup npm authentication"
+        run: |
+          echo "@leapfinancial:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> .npmrc
+
+      - name: "setup env file"
+        run: echo "${{ vars.ENV_FILE }}" | base64 --decode > .env
+
+      - name: "install dependencies"
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          pnpm railway up --service ${{ vars.RAILWAY_SERVICE_ID }}
