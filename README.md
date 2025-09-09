@@ -139,6 +139,33 @@ To run in development mode:
 npm run dev
 ```
 
+## Docker
+
+This project includes Docker support for containerized deployment:
+
+### Building the Docker Image
+
+```bash
+docker build -t hello-world-enviroments .
+```
+
+### Running the Container
+
+```bash
+docker run -p 3000:3000 hello-world-enviroments
+```
+
+### GitHub Actions CI/CD
+
+The project includes a GitHub Actions workflow that automatically:
+
+- Builds the Docker image on push/PR to main/master branches
+- Pushes the image to GitHub Container Registry (ghcr.io)
+- Uses the repository's `ci` environment for deployment
+- Supports multiple image tags (branch, SHA, latest)
+
+The workflow requires the `ci` environment to be configured in your repository settings with the `GH_TOKEN` environment variable.
+
 ## Contributing
 
 This project maintains a clean, simple architecture suitable for semi-senior developers. When contributing:
