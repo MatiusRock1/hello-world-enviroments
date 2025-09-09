@@ -77,6 +77,43 @@ class EnvironmentController {
     }
 
     /**
+     * Get version information
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
+    getVersionInfo(req, res) {
+        try {
+            const fs = require('fs');
+            let versionData = {
+                appVersion: process.env.APP_VERSION || 'unknown',
+                nodeVersion: process.version,
+                platform: process.platform
+            };
+
+            // Try to read version.json file if it exists
+            try {
+                const versionFile = fs.readFileSync('/app/version.json', 'utf8');
+                const fileData = JSON.parse(versionFile);
+                versionData = { ...versionData, ...fileData };
+            } catch (error) {
+                // File doesn't exist or can't be read, continue with env vars
+            }
+
+            res.json({
+                success: true,
+                message: 'Version information retrieved successfully',
+                data: versionData
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Error retrieving version information',
+                error: error.message
+            });
+        }
+    }
+
+    /**
      * Return all environment variables (no filtering for lab environment)
      * @private
      * @param {Object} env - Environment variables object

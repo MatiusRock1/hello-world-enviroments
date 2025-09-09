@@ -68,6 +68,12 @@ jobs:
         labels: |
           org.opencontainers.image.version=${{ steps.get_version.outputs.version }}
           org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.title=hello-world-environments
+          org.opencontainers.image.description=Hello World Environments Application
+          version=${{ steps.get_version.outputs.version }}
+          release.tag=${{ steps.get_version.outputs.tag }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
