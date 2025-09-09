@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.7](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.6...v1.0.7) (2025-09-09)
+
+
+### Bug Fixes
+
+* Replaces git command with a GitHub API call to fetch the latest release version in the release-please workflow. Updates step IDs and output references accordingly to improve reliability when determining the latest version. ([ae0999c](https://github.com/MatiusRock1/hello-world-enviroments/commit/ae0999c8728c08cf455efd86f49e6d1b309e3ed7))
+
 ## [1.0.6](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.5...v1.0.6) (2025-09-09)
 
 
