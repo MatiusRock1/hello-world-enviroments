@@ -92,7 +92,7 @@ class EnvironmentController {
 
             // Try to read version.json file if it exists
             try {
-                const versionFile = fs.readFileSync('/app/version.json', 'utf8');
+                const versionFile = fs.readFileSync('./version.json', 'utf8');
                 const fileData = JSON.parse(versionFile);
                 versionData = { ...versionData, ...fileData };
             } catch (error) {

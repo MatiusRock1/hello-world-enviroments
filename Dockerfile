@@ -8,11 +8,11 @@ ENV APP_VERSION=${VERSION}
 # Add version label
 LABEL version=${VERSION}
 
-# Create version file
-RUN echo "{\"version\": \"${VERSION}\", \"buildDate\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /app/version.json
-
 # Set the working directory in the container
 WORKDIR /app
+
+# Create version file
+RUN echo "{\"version\": \"${VERSION}\", \"buildDate\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > version.json
 
 
 # Copy package.json and package-lock.json (if available)
