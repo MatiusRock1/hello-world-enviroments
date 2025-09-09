@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Variables Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .info-section {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .search-section {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .env-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .env-table th,
+        .env-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .env-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .env-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .hidden-value {
+            color: #6c757d;
+            font-style: italic;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Environment Variables Viewer</h1>
+        
+        <div class="info-section">
+            <h3>System Information</h3>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="node-version">-</div>
+                    <div class="stat-label">Node Version</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="platform">-</div>
+                    <div class="stat-label">Platform</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="env-count">-</div>
+                    <div class="stat-label">Environment Variables</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <h3>Search Environment Variable</h3>
+            <input type="text" id="searchKey" placeholder="Enter environment variable name (e.g., NODE_ENV, PORT)">
+            <button onclick="searchEnvironmentVariable()">Search</button>
+            <button onclick="loadAllEnvironmentVariables()">Load All</button>
+        </div>
+
+        <div id="message"></div>
+        <div id="loading" class="loading" style="display: none;">Loading...</div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Load all environment variables on page load
+        window.onload = function() {
+            loadAllEnvironmentVariables();
+        };
+
+        async function loadAllEnvironmentVariables() {
+            showLoading(true);
+            clearMessage();
+            
+            try {
+                const response = await fetch('/api/environment');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayEnvironmentVariables(data.data);
+                    updateSystemInfo(data.data);
+                    showMessage('Environment variables loaded successfully!', 'success');
+                } else {
+                    showMessage('Error: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function searchEnvironmentVariable() {
+            const key = document.getElementById('searchKey').value.trim();
+            
+            if (!key) {
+                showMessage('Please enter an environment variable name', 'error');
+                return;
+            }
+
+            showLoading(true);
+            clearMessage();
+            
+            try {
+                const response = await fetch(`/api/environment/${encodeURIComponent(key)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySingleEnvironmentVariable(data.data);
+                    showMessage('Environment variable found!', 'success');
+                } else {
+                    showMessage('Error: ' + data.message, 'error');
+                    document.getElementById('results').innerHTML = '';
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayEnvironmentVariables(data) {
+            const envVars = data.environmentVariables;
+            let html = '<h3>All Environment Variables</h3>';
+            html += '<table class="env-table">';
+            html += '<thead><tr><th>Variable Name</th><th>Value</th></tr></thead>';
+            html += '<tbody>';
+            
+            for (const [key, value] of Object.entries(envVars)) {
+                const isHidden = value === '***HIDDEN***';
+                const valueClass = isHidden ? 'hidden-value' : '';
+                html += `<tr>
+                    <td><strong>${escapeHtml(key)}</strong></td>
+                    <td class="${valueClass}">${escapeHtml(value)}</td>
+                </tr>`;
+            }
+            
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function displaySingleEnvironmentVariable(data) {
+            let html = '<h3>Environment Variable Details</h3>';
+            html += '<table class="env-table">';
+            html += '<thead><tr><th>Variable Name</th><th>Value</th></tr></thead>';
+            html += '<tbody>';
+            html += `<tr>
+                <td><strong>${escapeHtml(data.key)}</strong></td>
+                <td>${escapeHtml(data.value)}</td>
+            </tr>`;
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function updateSystemInfo(data) {
+            document.getElementById('node-version').textContent = data.nodeVersion || '-';
+            document.getElementById('platform').textContent = data.platform || '-';
+            document.getElementById('env-count').textContent = data.count || '-';
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+        }
+
+        function clearMessage() {
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.display = 'none';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('searchKey').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchEnvironmentVariable();
+            }
+        });
+    </script>
+</body>
+</html>
