@@ -1,6 +1,6 @@
 {
   "name": "hello-world-enviroments",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A simple Node.js application with a controller that visualizes environment variables",
   "main": "app.js",
   "scripts": {
