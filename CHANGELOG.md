@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.8](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.7...v1.0.8) (2025-09-09)
+
+
+### Bug Fixes
+
+* Replaces semver-based tags with a raw version tag and adds OCI-compliant labels for image version and source in the release-please GitHub Actions workflow. ([879d785](https://github.com/MatiusRock1/hello-world-enviroments/commit/879d785162febe9dd412439966543565c48688cf))
+
 ## [1.0.7](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.6...v1.0.7) (2025-09-09)
 
 
