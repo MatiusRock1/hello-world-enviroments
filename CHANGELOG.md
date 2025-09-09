@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.3...v1.0.4) (2025-09-09)
+
+
+### Bug Fixes
+
+* The environment info API now includes the app version from the APP_VERSION environment variable, defaulting to 'unknown' if not set. ([46c4df6](https://github.com/MatiusRock1/hello-world-enviroments/commit/46c4df6e5ad9ba1e7e4983ba12556cc4f6309d8c))
+
 ## [1.0.3](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.2...v1.0.3) (2025-09-09)
 
 
