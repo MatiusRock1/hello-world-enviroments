@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.9](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.8...v1.0.9) (2025-09-09)
+
+
+### Bug Fixes
+
+* update ([27bf7ac](https://github.com/MatiusRock1/hello-world-enviroments/commit/27bf7ac6a66859204acc58fc2009c34d473350d9))
+
 ## [1.0.8](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.7...v1.0.8) (2025-09-09)
 
 
