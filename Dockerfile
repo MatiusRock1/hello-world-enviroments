@@ -1,6 +1,13 @@
 # Use the official Node.js runtime as base image
 FROM node:18-alpine
 
+# Accept version as build argument
+ARG VERSION=unknown
+ENV APP_VERSION=${VERSION}
+
+# Add version label
+LABEL version=${VERSION}
+
 # Set the working directory in the container
 WORKDIR /app
 
