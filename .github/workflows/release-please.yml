@@ -87,3 +87,62 @@ jobs:
           VERSION=${{ steps.get_version.outputs.version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+    - name: Update release with Docker image info
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GH_TOKEN }}
+        script: |
+          const { owner, repo } = context.repo;
+          const tag = '${{ steps.get_version.outputs.tag }}';
+          const version = '${{ steps.get_version.outputs.version }}';
+          
+          // Get the current release
+          const release = await github.rest.repos.getReleaseByTag({
+            owner,
+            repo,
+            tag
+          });
+          
+          // Prepare Docker image information
+          const dockerInfo = `
+          
+          ## 🐳 Docker Images
+          
+          This release is available as Docker images:
+          
+          ### Pull commands:
+          \`\`\`bash
+          # Specific version
+          docker pull ghcr.io/${owner}/${repo}:${version}
+          
+          # Latest
+          docker pull ghcr.io/${owner}/${repo}:latest
+          \`\`\`
+          
+          ### Image details:
+          - **Registry**: GitHub Container Registry (ghcr.io)
+          - **Repository**: \`ghcr.io/${owner}/${repo}\`
+          - **Tags**: \`${version}\`, \`latest\`
+          - **Platform**: linux/amd64
+          - **Base Image**: node:18-alpine
+          
+          ### Run the container:
+          \`\`\`bash
+          docker run -p 8080:8080 ghcr.io/${owner}/${repo}:${version}
+          \`\`\`
+          
+          ### Environment Variables:
+          - \`APP_VERSION\`: ${version}
+          - \`NODE_ENV\`: production
+          
+          📦 [View on GitHub Container Registry](https://github.com/${owner}/${repo}/pkgs/container/${repo})
+          `;
+          
+          // Update the release body
+          await github.rest.repos.updateRelease({
+            owner,
+            repo,
+            release_id: release.data.id,
+            body: release.data.body + dockerInfo
+          });
