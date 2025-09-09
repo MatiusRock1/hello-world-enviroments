@@ -15,8 +15,6 @@ jobs:
     environment: ci
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      version: ${{ steps.release.outputs.version }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -36,12 +34,18 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    - name: Debug release outputs
+    - name: Get latest tag
+      id: get_tag
       run: |
-        echo "Release created: ${{ needs.release.outputs.release_created }}"
-        echo "Tag name: ${{ needs.release.outputs.tag_name }}"
-        echo "Version: ${{ needs.release.outputs.version }}"
+        latest_tag=$(git describe --tags --abbrev=0)
+        version=${latest_tag#v}
+        echo "tag=$latest_tag" >> $GITHUB_OUTPUT
+        echo "version=$version" >> $GITHUB_OUTPUT
+        echo "Latest tag: $latest_tag"
+        echo "Version: $version"
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -73,6 +77,6 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
-          VERSION=${{ needs.release.outputs.version }}
+          VERSION=${{ steps.get_tag.outputs.version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
