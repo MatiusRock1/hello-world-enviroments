@@ -63,10 +63,11 @@ jobs:
       with:
         images: ghcr.io/${{ github.repository }}
         tags: |
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=semver,pattern={{major}}
+          type=raw,value=${{ steps.get_version.outputs.version }}
           type=raw,value=latest
+        labels: |
+          org.opencontainers.image.version=${{ steps.get_version.outputs.version }}
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
