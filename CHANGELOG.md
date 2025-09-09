@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.2...v1.0.3) (2025-09-09)
+
+
+### Bug Fixes
+
+* The Dockerfile now accepts a VERSION build argument, sets it as an environment variable, and adds it as a label. The release workflow passes the version to the Docker build step to ensure images are properly versioned. ([136a592](https://github.com/MatiusRock1/hello-world-enviroments/commit/136a59260931a7be9f61f576200e48c769057c84))
+
 ## [1.0.2](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.1...v1.0.2) (2025-09-09)
 
 
