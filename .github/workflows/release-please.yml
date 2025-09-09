@@ -34,17 +34,17 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
-    - name: Get latest tag
-      id: get_tag
+    - name: Get latest release version
+      id: get_version
       run: |
-        latest_tag=$(git describe --tags --abbrev=0)
-        version=${latest_tag#v}
-        echo "tag=$latest_tag" >> $GITHUB_OUTPUT
+        latest_release=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+        tag_name=$(echo "$latest_release" | jq -r '.tag_name')
+        version=${tag_name#v}
+        echo "tag=$tag_name" >> $GITHUB_OUTPUT
         echo "version=$version" >> $GITHUB_OUTPUT
-        echo "Latest tag: $latest_tag"
+        echo "Latest release tag: $tag_name"
         echo "Version: $version"
 
     - name: Set up Docker Buildx
@@ -77,6 +77,6 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
-          VERSION=${{ steps.get_tag.outputs.version }}
+          VERSION=${{ steps.get_version.outputs.version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
