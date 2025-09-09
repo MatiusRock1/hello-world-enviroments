@@ -12,7 +12,6 @@ A simple and clean Node.js application that provides a controller to visualize e
 
 ## Getting Started
 
-
 ### Prerequisites
 
 - Node.js 14.0.0 or higher
