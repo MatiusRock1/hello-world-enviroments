@@ -21,7 +21,8 @@ class EnvironmentController {
                     environmentVariables: filteredEnv,
                     count: Object.keys(filteredEnv).length,
                     nodeVersion: process.version,
-                    platform: process.platform
+                    platform: process.platform,
+                    appVersion: process.env.APP_VERSION || 'unknown'
                 }
             });
         } catch (error) {
