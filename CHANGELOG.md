@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.11](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.10...v1.0.11) (2025-09-09)
+
+
+### Bug Fixes
+
+* This update enhances the release workflow by appending Docker image details and usage instructions to the release notes, making it easier for users to discover and use the published Docker images. ([4f6c161](https://github.com/MatiusRock1/hello-world-enviroments/commit/4f6c161a9078a083ea25d6d70142b844ba5cda87))
+
 ## [1.0.10](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.9...v1.0.10) (2025-09-09)
 
 
