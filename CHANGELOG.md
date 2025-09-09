@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.10](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.9...v1.0.10) (2025-09-09)
+
+
+### Bug Fixes
+
+* Moved version.json creation to the app working directory in Dockerfile and updated environmentController.js to read from the correct relative path. This ensures consistency between file creation and access. ([f84d3d8](https://github.com/MatiusRock1/hello-world-enviroments/commit/f84d3d863a5fa589b5843dff09e91872ce2665e5))
+
 ## [1.0.9](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.8...v1.0.9) (2025-09-09)
 
 
