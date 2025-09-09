@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.12](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.11...v1.0.12) (2025-09-09)
+
+
+### Bug Fixes
+
+* The release-please workflow now includes the current UTC date and time in the generated release notes and Docker image details. This provides clearer context on when the release was generated. ([4cfe6e4](https://github.com/MatiusRock1/hello-world-enviroments/commit/4cfe6e4fc3ab8095120f44909f02cf09cce3e92e))
+
 ## [1.0.11](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.10...v1.0.11) (2025-09-09)
 
 
