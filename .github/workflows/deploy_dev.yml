@@ -36,21 +36,52 @@ jobs:
           RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           RAILWAY_ENV_ID: ${{ secrets.RAILWAY_ENV_ID }}
+          REGISTRY_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
           IMAGE: ${{ steps.img.outputs.image }}
         run: |
           echo "Deploying image $IMAGE to Railway service $RAILWAY_SERVICE_ID"
           url="https://backboard.railway.com/graphql/v2"
           [ -n "$RAILWAY_PROJECT_ID" ] || { echo "Missing RAILWAY_PROJECT_ID secret"; exit 1; }
           [ -n "$RAILWAY_ENV_ID" ] || { echo "Missing RAILWAY_ENV_ID secret"; exit 1; }
-          payload=$(jq -n --arg pid "$RAILWAY_PROJECT_ID" --arg eid "$RAILWAY_ENV_ID" --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{
-            query: "mutation($projectId: ID!, $environmentId: ID!, $serviceId: ID!, $image: String!) { deploymentCreate(input: { projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId, source: { image: $image } }) { id status } }",
-            variables: { projectId: $pid, environmentId: $eid, serviceId: $sid, image: $img }
+          # Step 1: Update service source image (optionally include registry credentials if provided)
+          update_variables=$(jq -n --arg eid "$RAILWAY_ENV_ID" --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" --arg u "$REGISTRY_USERNAME" --arg p "$REGISTRY_PASSWORD" '
+            { environmentId: $eid, serviceId: $sid, input: { source: { image: $img } } } | 
+            if ($u != null and $u != "" and $p != null and $p != "") then .input.registryCredentials = { username: $u, password: $p } | . else . end
+          ')
+          update_payload=$(jq -n --argjson vars "$update_variables" '{
+            query: "mutation($environmentId: String, $serviceId: String!, $input: ServiceInstanceUpdateInput!) { serviceInstanceUpdate(environmentId: $environmentId, serviceId: $serviceId, input: $input) { id } }",
+            variables: $vars
           }')
-          http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$url" \
+          echo "Updating service source image..."
+          upd_code=$(curl -sS -o update.json -w "%{http_code}" -X POST "$url" \
             -H "Project-Access-Token: $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
-            --data "$payload")
-          echo "HTTP $http_code"
-          cat response.json || true
-          [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] || { echo "Railway API returned HTTP $http_code"; exit 1; }
-          jq -e '.data.deploymentCreate.id' response.json >/dev/null || { echo "Railway deployment failed"; exit 1; }
+            --data "$update_payload")
+          echo "Update HTTP $upd_code" && cat update.json || true
+          [ "$upd_code" -ge 200 ] && [ "$upd_code" -lt 300 ] || { echo "serviceInstanceUpdate failed (HTTP $upd_code)"; exit 1; }
+
+          # Step 2: Trigger deploy
+          deploy_payload=$(jq -n --arg eid "$RAILWAY_ENV_ID" --arg sid "$RAILWAY_SERVICE_ID" '{
+            query: "mutation($environmentId: String!, $serviceId: String!) { serviceInstanceDeploy(environmentId: $environmentId, serviceId: $serviceId) { id } }",
+            variables: { environmentId: $eid, serviceId: $sid }
+          }')
+          echo "Triggering deploy..."
+          dep_code=$(curl -sS -o deploy.json -w "%{http_code}" -X POST "$url" \
+            -H "Project-Access-Token: $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "$deploy_payload")
+          echo "Deploy HTTP $dep_code" && cat deploy.json || true
+          if ! jq -e '.data.serviceInstanceDeploy.id' deploy.json >/dev/null 2>&1; then
+            echo "Deploy failed or not available, trying Redeploy..."
+            redeploy_payload=$(jq -n --arg eid "$RAILWAY_ENV_ID" --arg sid "$RAILWAY_SERVICE_ID" '{
+              query: "mutation($environmentId: String!, $serviceId: String!) { serviceInstanceRedeploy(environmentId: $environmentId, serviceId: $serviceId) { id } }",
+              variables: { environmentId: $eid, serviceId: $sid }
+            }')
+            red_code=$(curl -sS -o redeploy.json -w "%{http_code}" -X POST "$url" \
+              -H "Project-Access-Token: $RAILWAY_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data "$redeploy_payload")
+            echo "Redeploy HTTP $red_code" && cat redeploy.json || true
+            [ "$red_code" -ge 200 ] && [ "$red_code" -lt 300 ] || { echo "serviceInstanceRedeploy failed (HTTP $red_code)"; exit 1; }
+          fi

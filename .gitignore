@@ -1,3 +1,5 @@
+.local/
+response.json
 # Dependencies
 node_modules/
 
