@@ -41,5 +41,6 @@ EXPOSE 8080
 ENV NODE_ENV=production
 
 
+
 # Command to run the application
 CMD ["npm", "start"]
