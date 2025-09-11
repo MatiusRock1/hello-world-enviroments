@@ -98,14 +98,12 @@ jobs:
           const version = '${{ steps.get_version.outputs.version }}';
           const tag = '${{ steps.get_version.outputs.tag }}';
           const image = `ghcr.io/${owner}/${repo}:${version}`;
-          const digest = '${{ steps.build.outputs.digest }}';
-          const image_digest = digest ? `ghcr.io/${owner}/${repo}@${digest}` : '';
           core.info(`Dispatching deploy_dev with image ${image}`);
           await github.rest.repos.createDispatchEvent({
             owner,
             repo,
             event_type: 'deploy_dev',
-            client_payload: { image, image_digest, version, tag }
+            client_payload: { image, version, tag }
           });
 
     - name: Update release with Docker image info

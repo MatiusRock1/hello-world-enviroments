@@ -13,28 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     steps:
-      - name: Determine image to deploy (prefer payload)
+      - name: Determine image to deploy (tag only)
         id: img
         run: |
-          if [ -n "${{ github.event.client_payload.image_digest }}" ]; then
-            echo "Using digest image from payload"
-            echo "image=${{ github.event.client_payload.image_digest }}" >> $GITHUB_OUTPUT
-            exit 0
-          fi
           if [ -n "${{ github.event.client_payload.image }}" ]; then
             echo "Using tag image from payload"
             echo "image=${{ github.event.client_payload.image }}" >> $GITHUB_OUTPUT
-            exit 0
+          else
+            echo "No image in payload; fetching latest release"
+            latest_release=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+            tag_name=$(echo "$latest_release" | jq -r '.tag_name')
+            version=${tag_name#v}
+            image="ghcr.io/${{ github.repository }}:${version}"
+            echo "image=$image" >> $GITHUB_OUTPUT
+            echo "version=$version" >> $GITHUB_OUTPUT
           fi
-          echo "No image in payload; fetching latest release"
-          latest_release=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/latest")
-          tag_name=$(echo "$latest_release" | jq -r '.tag_name')
-          version=${tag_name#v}
-          image="ghcr.io/${{ github.repository }}:${version}"
-          echo "image=$image" >> $GITHUB_OUTPUT
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "Resolved image: $image"
 
       - name: Deploy to Railway via GraphQL
         env:
@@ -44,9 +38,11 @@ jobs:
         run: |
           echo "Deploying image $IMAGE to Railway service $RAILWAY_SERVICE_ID"
           payload=$(jq -n --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{query: "mutation($input: ServiceDeploymentCreateInput!) { serviceDeploymentCreate(input: $input) { id status } }", variables: { input: { serviceId: $sid, image: $img } } }')
-          response=$(curl -sS -X POST https://backboard.railway.app/graphql \
+          http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST https://backboard.railway.app/graphql \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
             --data "$payload")
-          echo "$response"
-          echo "$response" | jq -e '.data.serviceDeploymentCreate.id' >/dev/null || { echo "Railway deployment failed"; exit 1; }
+          echo "HTTP $http_code"
+          cat response.json || true
+          [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] || { echo "Railway API returned HTTP $http_code"; exit 1; }
+          jq -e '.data.serviceDeploymentCreate.id' response.json >/dev/null || { echo "Railway deployment failed"; exit 1; }
