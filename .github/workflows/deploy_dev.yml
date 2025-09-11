@@ -37,12 +37,30 @@ jobs:
           IMAGE: ${{ steps.img.outputs.image }}
         run: |
           echo "Deploying image $IMAGE to Railway service $RAILWAY_SERVICE_ID"
-          payload=$(jq -n --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{query: "mutation($input: ServiceDeploymentCreateInput!) { serviceDeploymentCreate(input: $input) { id status } }", variables: { input: { serviceId: $sid, image: $img } } }')
-          http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST https://backboard.railway.com/graphql/v2 \
-            -H "Authorization: Bearer $RAILWAY_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data "$payload")
-          echo "HTTP $http_code"
-          cat response.json || true
-          [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] || { echo "Railway API returned HTTP $http_code"; exit 1; }
-          jq -e '.data.serviceDeploymentCreate.id' response.json >/dev/null || { echo "Railway deployment failed"; exit 1; }
+            payload=$(jq -n --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{query: "mutation($input: ServiceDeploymentCreateInput!) { serviceDeploymentCreate(input: $input) { id status } }", variables: { input: { serviceId: $sid, image: $img } } }')
+            endpoints=(
+              "https://backboard.railway.app/graphql"
+              "https://backboard.railway.app/graphql/v2"
+            )
+            success=0
+            for url in "${endpoints[@]}"; do
+              echo "POST $url"
+              http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$url" \
+                -H "Authorization: Bearer $RAILWAY_TOKEN" \
+                -H "Content-Type: application/json" \
+                --data "$payload")
+              echo "HTTP $http_code"
+              if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+                if jq -e '.data.serviceDeploymentCreate.id' response.json >/dev/null 2>&1; then
+                  success=1
+                  break
+                else
+                  echo "GraphQL response did not include deployment id; trying next endpoint"
+                  cat response.json || true
+                fi
+              else
+                echo "Railway API returned HTTP $http_code; trying next endpoint"
+                cat response.json || true
+              fi
+            done
+            [ "$success" -eq 1 ] || { echo "Railway deployment failed after trying ${#endpoints[@]} endpoint(s)"; exit 1; }
