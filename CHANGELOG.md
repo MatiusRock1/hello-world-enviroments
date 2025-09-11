@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.21](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.20...v1.0.21) (2025-09-11)
+
+
+### Bug Fixes
+
+* Enhanced the GitHub Actions deploy_dev workflow to support registry credentials and a more robust deployment process with update, deploy, and fallback redeploy steps. Updated .gitignore to exclude .local/, response.json, and added introspection.json, sanity.json, and update.json for debugging and introspection purposes. ([07c771c](https://github.com/MatiusRock1/hello-world-enviroments/commit/07c771c29a395b65f041ad2c6aae3d8252f1fea4))
+
 ## [1.0.20](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.19...v1.0.20) (2025-09-11)
 
 
