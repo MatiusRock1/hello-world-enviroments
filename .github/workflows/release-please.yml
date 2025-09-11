@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ci
     permissions:
-      contents: read
+      contents: write
       packages: write
     
     steps:
@@ -87,6 +87,23 @@ jobs:
           VERSION=${{ steps.get_version.outputs.version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+    - name: Trigger deploy workflow
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { owner, repo } = context.repo;
+          const version = '${{ steps.get_version.outputs.version }}';
+          const tag = '${{ steps.get_version.outputs.tag }}';
+          const image = `ghcr.io/${owner}/${repo}:${version}`;
+          core.info(`Dispatching deploy_dev with image ${image}`);
+          await github.rest.repos.createDispatchEvent({
+            owner,
+            repo,
+            event_type: 'deploy_dev',
+            client_payload: { image, version, tag }
+          });
 
     - name: Update release with Docker image info
       uses: actions/github-script@v7

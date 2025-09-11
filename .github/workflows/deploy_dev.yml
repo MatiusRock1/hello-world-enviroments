@@ -1,0 +1,36 @@
+name: deploy dev
+
+on:
+  repository_dispatch:
+    types: [deploy_dev]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Extract payload
+        id: payload
+        run: |
+          echo "image=${{ github.event.client_payload.image }}" >> $GITHUB_OUTPUT
+          echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          echo "tag=${{ github.event.client_payload.tag }}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Railway via GraphQL
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+          IMAGE: ${{ steps.payload.outputs.image }}
+        run: |
+          echo "Deploying image $IMAGE to Railway service $RAILWAY_SERVICE_ID"
+          payload=$(jq -n --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{query: "mutation($input: ServiceDeploymentCreateInput!) { serviceDeploymentCreate(input: $input) { id status } }", variables: { input: { serviceId: $sid, image: $img } } }')
+          response=$(curl -sS -X POST https://backboard.railway.app/graphql \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "$payload")
+          echo "$response"
+          echo "$response" | jq -e '.data.serviceDeploymentCreate.id' >/dev/null || { echo "Railway deployment failed"; exit 1; }
