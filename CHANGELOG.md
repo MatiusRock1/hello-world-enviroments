@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.20](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.19...v1.0.20) (2025-09-11)
+
+
+### Bug Fixes
+
+* Streamlined the deployment step in deploy_dev.yml by removing logic for resolving project/environment IDs and multiple mutation attempts. The script now requires RAILWAY_PROJECT_ID and RAILWAY_ENV_ID secrets and uses a single mutation with the Project-Access-Token header for deployment. ([9b7add4](https://github.com/MatiusRock1/hello-world-enviroments/commit/9b7add43f8d14943bff94a2f1fee2944bdcac330))
+
 ## [1.0.19](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.18...v1.0.19) (2025-09-11)
 
 
