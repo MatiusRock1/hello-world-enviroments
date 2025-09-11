@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.19](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.18...v1.0.19) (2025-09-11)
+
+
+### Bug Fixes
+
+* Enhances the deployment step to support both deploymentCreate and serviceDeploymentCreate mutations, resolves project and environment IDs when using a project token, and generalizes token header usage for better compatibility with different Railway authentication methods. ([4d5dab4](https://github.com/MatiusRock1/hello-world-enviroments/commit/4d5dab45777080507d34f1504aecab71f1ee587a))
+
 ## [1.0.18](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.17...v1.0.18) (2025-09-11)
 
 
