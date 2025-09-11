@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.13](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.12...v1.0.13) (2025-09-11)
+
+
+### Bug Fixes
+
+* Cleaned up formatting by deleting an unnecessary blank line before the application code copy step. ([a04deac](https://github.com/MatiusRock1/hello-world-enviroments/commit/a04deac57eb0abf87c80833698df24225ef2b8da))
+
 ## [1.0.12](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.11...v1.0.12) (2025-09-09)
 
 
