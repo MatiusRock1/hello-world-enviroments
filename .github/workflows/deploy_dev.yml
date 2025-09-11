@@ -37,42 +37,65 @@ jobs:
           IMAGE: ${{ steps.img.outputs.image }}
         run: |
           echo "Deploying image $IMAGE to Railway service $RAILWAY_SERVICE_ID"
-            payload=$(jq -n --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{
-              query: "mutation($serviceId: ID!, $image: String!) { serviceDeploymentCreate(input: { serviceId: $serviceId, source: { image: $image } }) { id status } }",
-              variables: { serviceId: $sid, image: $img }
-            }')
-            url="https://backboard.railway.com/graphql/v2"
-            echo "POST $url"
-            success=0
-            # Try with Authorization header (account or team token)
+          url="https://backboard.railway.com/graphql/v2"
+          echo "POST $url"
+
+          # Resolve project/environment IDs (if using a project token)
+          projId="${{ secrets.RAILWAY_PROJECT_ID }}"
+          envId="${{ secrets.RAILWAY_ENV_ID }}"
+          if [ -z "$projId" ] || [ -z "$envId" ]; then
+            echo "Attempting to resolve project/environment via Project-Access-Token"
+            curl -sS -o pe.json -w "%{http_code}" -X POST "$url" \
+              -H "Project-Access-Token: $RAILWAY_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data '{"query":"query { projectToken { projectId environmentId } }"}' | grep -q "^200$" && true
+            pj=$(jq -r '.data.projectToken.projectId // empty' pe.json 2>/dev/null || true)
+            ev=$(jq -r '.data.projectToken.environmentId // empty' pe.json 2>/dev/null || true)
+            [ -n "$projId" ] || projId="$pj"
+            [ -n "$envId" ] || envId="$ev"
+            echo "Resolved projectId=${projId:-<none>} environmentId=${envId:-<none>}"
+          fi
+
+          # Build two possible mutations and try both
+          payload1=$(jq -n --arg pid "$projId" --arg eid "$envId" --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{
+            query: "mutation($projectId: ID!, $environmentId: ID!, $serviceId: ID!, $image: String!) { deploymentCreate(input: { projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId, source: { image: $image } }) { id status } }",
+            variables: { projectId: $pid, environmentId: $eid, serviceId: $sid, image: $img }
+          }')
+          payload2=$(jq -n --arg pid "$projId" --arg eid "$envId" --arg sid "$RAILWAY_SERVICE_ID" --arg img "$IMAGE" '{
+            query: "mutation($projectId: ID, $environmentId: ID, $serviceId: ID!, $image: String!) { serviceDeploymentCreate(input: { projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId, source: { image: $image } }) { id status } }",
+            variables: { projectId: ($pid // null), environmentId: ($eid // null), serviceId: $sid, image: $img }
+          }')
+
+          success=0
+          for payload in "$payload1" "$payload2"; do
+            echo "Trying mutation payload"
+            # Try Authorization header
             http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$url" \
               -H "Authorization: Bearer $RAILWAY_TOKEN" \
               -H "Content-Type: application/json" \
               --data "$payload")
             echo "HTTP $http_code"
-            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] && jq -e '.data.serviceDeploymentCreate.id' response.json >/dev/null 2>&1; then
-              success=1
-            else
-              echo "Auth with Authorization header failed or response invalid; trying Project-Access-Token header"
-              cat response.json || true
-              http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$url" \
-                -H "Project-Access-Token: $RAILWAY_TOKEN" \
-                -H "Content-Type: application/json" \
-                --data "$payload")
-              echo "HTTP $http_code"
-              if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] && jq -e '.data.serviceDeploymentCreate.id' response.json >/dev/null 2>&1; then
-                success=1
-              fi
-              if [ "$success" -ne 1 ]; then
-                echo "Trying Team-Access-Token header"
-                http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$url" \
-                  -H "Team-Access-Token: $RAILWAY_TOKEN" \
-                  -H "Content-Type: application/json" \
-                  --data "$payload")
-                echo "HTTP $http_code"
-                if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] && jq -e '.data.serviceDeploymentCreate.id' response.json >/dev/null 2>&1; then
-                  success=1
-                fi
-              fi
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] && jq -e '.data | to_entries[] | select(.value.id!=null) | .value.id' response.json >/dev/null 2>&1; then
+              success=1; break
             fi
-            [ "$success" -eq 1 ] || { echo "Railway deployment failed"; cat response.json || true; exit 1; }
+            echo "Auth with Authorization failed; trying Project-Access-Token"
+            http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$url" \
+              -H "Project-Access-Token: $RAILWAY_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data "$payload")
+            echo "HTTP $http_code"
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] && jq -e '.data | to_entries[] | select(.value.id!=null) | .value.id' response.json >/dev/null 2>&1; then
+              success=1; break
+            fi
+            echo "Trying Team-Access-Token"
+            http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$url" \
+              -H "Team-Access-Token: $RAILWAY_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data "$payload")
+            echo "HTTP $http_code"
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] && jq -e '.data | to_entries[] | select(.value.id!=null) | .value.id' response.json >/dev/null 2>&1; then
+              success=1; break
+            fi
+            echo "Mutation attempt failed; response:" && cat response.json || true
+          done
+          [ "$success" -eq 1 ] || { echo "Railway deployment failed"; cat response.json || true; exit 1; }
