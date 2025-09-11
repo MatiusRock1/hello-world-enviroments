@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.14](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.13...v1.0.14) (2025-09-11)
+
+
+### Bug Fixes
+
+* Inserted a blank line before the CMD instruction for improved readability in the Dockerfile. ([b05dffd](https://github.com/MatiusRock1/hello-world-enviroments/commit/b05dffdffb42a7ae42af84d4e9b30b43fc122a9e))
+* Introduces a new GitHub Actions workflow to deploy to Railway on repository dispatch events. Updates the release-please workflow to trigger the new deploy workflow after a release, and adjusts permissions to allow writing contents and packages. ([4b73f5a](https://github.com/MatiusRock1/hello-world-enviroments/commit/4b73f5ab25ad2a61306f6a3d32254013d1298720))
+
 ## [1.0.13](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.12...v1.0.13) (2025-09-11)
 
 
