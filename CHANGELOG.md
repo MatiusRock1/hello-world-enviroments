@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.17](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.16...v1.0.17) (2025-09-11)
+
+
+### Bug Fixes
+
+* The deployment script now attempts to deploy to multiple Railway GraphQL endpoints, improving reliability in case one endpoint is unavailable or returns an unexpected response. ([98fd160](https://github.com/MatiusRock1/hello-world-enviroments/commit/98fd1605050a704e9f99dbb24b1af382e41eb9a9))
+
 ## [1.0.16](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.15...v1.0.16) (2025-09-11)
 
 
