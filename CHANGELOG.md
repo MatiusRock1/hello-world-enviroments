@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.15](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.14...v1.0.15) (2025-09-11)
+
+
+### Bug Fixes
+
+* The deploy_dev workflow now determines the image to deploy using only image tags, removing support for image digests. The deployment step now checks HTTP status codes and improves error handling. The release-please workflow was updated to stop passing image digests in the client payload. ([d359c29](https://github.com/MatiusRock1/hello-world-enviroments/commit/d359c292c20c59c28fd41f91162fe9886e642796))
+
 ## [1.0.14](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.13...v1.0.14) (2025-09-11)
 
 
