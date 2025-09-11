@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.18](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.17...v1.0.18) (2025-09-11)
+
+
+### Bug Fixes
+
+* Refactored the Railway deployment step in the GitHub Actions workflow to use a single endpoint and try multiple authentication headers (Authorization, Project-Access-Token, Team-Access-Token) for better compatibility. Added a Postman collection (railway_graphql_collection.json) with various Railway GraphQL queries for easier API exploration and testing. ([8ec062e](https://github.com/MatiusRock1/hello-world-enviroments/commit/8ec062e4cdae837bbd931118e0f1e4323242b3d2))
+
 ## [1.0.17](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.16...v1.0.17) (2025-09-11)
 
 
