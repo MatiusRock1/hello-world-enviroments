@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.16](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.15...v1.0.16) (2025-09-11)
+
+
+### Bug Fixes
+
+* Changed the deployment API URL in the GitHub Actions workflow from railway.app/graphql to railway.com/graphql/v2 to reflect the updated Railway API endpoint. ([e7a55a4](https://github.com/MatiusRock1/hello-world-enviroments/commit/e7a55a49d35dcdda8bd2a1128b33abde0f0a5a23))
+
 ## [1.0.15](https://github.com/MatiusRock1/hello-world-enviroments/compare/v1.0.14...v1.0.15) (2025-09-11)
 
 
